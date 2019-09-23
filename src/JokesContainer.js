@@ -21,23 +21,34 @@ class JokesContainer extends React.Component {
   }
 
   static defaultProps = {
-    numJokes: 10
+    numJokes: 20
   }
 
   async componentDidMount() {
     let result = await axios.get(`https://icanhazdadjoke.com/search?limit=${this.props.numJokes}`,
       { headers: { Accept: "application/json" } });
-    let jokesWithVotes = result.data.results.map((joke, idx) => {
-      joke.votes = 0;
+    let jokesWithVotes = result.data.results.map((joke) => {
+      joke.votes = parseInt(localStorage.getItem(joke.id)) || 0;
       return joke;
+    })
+    jokesWithVotes.sort((a,b) =>{
+      return b.votes - a.votes;
     })
     this.setState({ jokes: jokesWithVotes, loading: false });
   }
 
   handleVote(value, idx) {
     let editedJokes = this.state.jokes.map((joke, jIdx) => {
-      return (jIdx === idx ? { ...joke, votes: joke.votes + value } : joke)
+      
+      // return (jIdx === idx ? (localStorage.setItem(joke.id, joke.votes + value) { ...joke, votes: joke.votes + value }) : joke)
+      if (jIdx === idx){
+        localStorage.setItem(joke.id, joke.votes + value);
+        return { ...joke, votes: joke.votes + value }
+      } else {
+        return joke;
+      }
     });
+    console.log("Local Storage", localStorage);
     this.setState({ jokes: editedJokes });
   }
 
